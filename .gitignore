@@ -16,7 +16,6 @@ __pycache__/
 
 # Allure results and reports
 allure_results/
-allure_report/
 
 # IDE settings
 .vscode/
