@@ -2,39 +2,50 @@ from selenium.webdriver.common.by import By
 
 
 class OrderPageLocators:
-    # Шаг 1 — данные пользователя
-    FIRST_NAME = (By.XPATH, "//input[@placeholder='* Имя']")
-    LAST_NAME = (By.XPATH, "//input[@placeholder='* Фамилия']")
-    ADDRESS = (By.XPATH, "//input[@placeholder='* Адрес: куда привезти заказ']")
+    # --- Шаг 1: Форма данных клиента ---
+    FIRST_NAME_INPUT = (By.XPATH, "//input[@placeholder='* Имя']")
+    LAST_NAME_INPUT = (By.XPATH, "//input[@placeholder='* Фамилия']")
+    ADDRESS_INPUT = (By.XPATH, "//input[@placeholder='* Адрес: куда привезти заказ']")
     METRO_INPUT = (By.XPATH, "//input[@placeholder='* Станция метро']")
-    METRO_OPTION = lambda name: (
-        By.XPATH,
-        f"//div[contains(@class,'select-search__select')]//div[text()='{name}']",
-    )
-    PHONE = (By.XPATH, "//input[@placeholder='* Телефон: на него позвонит курьер']")
-    NEXT_BUTTON = (By.XPATH, "//button[contains(@class,'Button_Middle') and text()='Далее']")
 
-    # Шаг 2 — про аренду
+    @staticmethod
+    def METRO_DROPDOWN_OPTION(text):
+        return (
+            By.XPATH,
+            f"//div[contains(@class,'select-search__select')]//div[text()='{text}']",
+        )
+
+    PHONE_INPUT = (By.XPATH, "//input[@placeholder='* Телефон: на него позвонит курьер']")
+
+    NEXT_BUTTON = (By.XPATH, "//button[text()='Далее']")
+
+    # --- Шаг 2: Про аренду ---
     DATE_INPUT = (By.XPATH, "//input[@placeholder='* Когда привезти самокат']")
-    DATE_DAY = lambda day: (
-        By.XPATH,
-        f"//div[contains(@class,'react-datepicker__day') and text()='{day}']",
-    )
+    RENTAL_PERIOD_DROPDOWN = (By.XPATH, "//span[@class='Dropdown-arrow']")
 
-    RENT_DROPDOWN = (By.CLASS_NAME, "Dropdown-placeholder")
-    RENT_OPTION = lambda text: (
-        By.XPATH,
-        f"//div[@class='Dropdown-option' and text()='{text}']",
-    )
+    @staticmethod
+    def RENTAL_PERIOD_OPTION(text):
+        return (
+            By.XPATH,
+            f"//div[contains(@class,'Dropdown-menu')]//div[text()='{text}']",
+        )
 
     COLOR_BLACK = (By.ID, "black")
     COLOR_GREY = (By.ID, "grey")
 
-    COMMENT = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
+    COMMENT_INPUT = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
 
-    # Кнопки подтверждения
-    FINAL_ORDER_BUTTON = (By.XPATH, "//button[contains(@class,'Button_Middle') and text()='Заказать']")
-    CONFIRM_YES_BUTTON = (By.XPATH, "//button[contains(@class,'Button_Middle') and text()='Да']")
+    # ВАЖНО: нижняя кнопка "Заказать" в блоке формы, а не в шапке
+    ORDER_BUTTON = (
+        By.XPATH,
+        "//div[contains(@class,'Order_Buttons')]/button[text()='Заказать']",
+    )
 
-    # Модалка об успешном заказе
-    SUCCESS_MODAL_HEADER = (By.XPATH, "//div[contains(@class,'Order_ModalHeader')]")
+    YES_BUTTON = (By.XPATH, "//button[text()='Да']")
+
+    # --- Окно подтверждения ---
+    # Любой заголовок модального окна, текст проверяет тест
+    CONFIRM_TITLE = (
+        By.XPATH,
+        "//div[contains(@class,'Order_ModalHeader')]",
+    )
