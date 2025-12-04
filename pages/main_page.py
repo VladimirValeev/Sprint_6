@@ -8,10 +8,6 @@ class MainPage(BasePage):
     # константа URL, которую ждёт тест test_scooter_logo_returns_to_main
     URL = MainPageLocators.URL
 
-    @allure.step("Открыть главную страницу")
-    def open(self):
-        self.driver.get(self.URL)
-
     # ---------------- ЛОГОТИПЫ ----------------
 
     @allure.step("Клик по логотипу Самоката")
@@ -30,7 +26,7 @@ class MainPage(BasePage):
 
     @allure.step("Клик по нижней кнопке 'Заказать'")
     def click_order_bottom(self):
-        # Для нижней кнопки часто нужен скролл
+        # Для нижней кнопки нужен скролл
         self.scroll_into_view(MainPageLocators.ORDER_BUTTON_BOTTOM)
         self.click(MainPageLocators.ORDER_BUTTON_BOTTOM)
 
@@ -59,6 +55,5 @@ class MainPage(BasePage):
     @allure.step("Получить текст ответа FAQ №{index}")
     def get_answer(self, index: int) -> str:
         locator = MainPageLocators.ANSWER(index)
-        # здесь можно было бы использовать хелпер из BasePage, но прямой поиск тоже ок
-        element = self.driver.find_element(*locator)
-        return element.text
+        # больше никакого прямого self.driver.find_element — всё через BasePage
+        return self.get_element_text(locator)

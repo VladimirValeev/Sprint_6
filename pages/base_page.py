@@ -2,6 +2,7 @@ import allure
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import ElementClickInterceptedException
 
 
 class BasePage:
@@ -13,7 +14,10 @@ class BasePage:
 
     @allure.step("Открыть страницу")
     def open(self):
-        """Открывает страницу по self.url или по атрибуту класса URL."""
+        """
+        Открывает страницу по self.url или по атрибуту класса URL.
+        Тесты ожидают, что у страниц (например, MainPage) есть атрибут URL.
+        """
         target_url = self.url or getattr(self, "URL", None)
         if not target_url:
             raise ValueError("URL не задана ни в конструкторе, ни в атрибуте URL класса.")
@@ -41,7 +45,11 @@ class BasePage:
             "arguments[0].scrollIntoView({block: 'center'});",
             element,
         )
-        element.click()
+        try:
+            element.click()
+        except ElementClickInterceptedException:
+            # На случай перекрытий элементом-картинкой (как с самокатом в FAQ)
+            self.driver.execute_script("arguments[0].click();", element)
 
     def click(self, locator, timeout: int = 10):
         """Публичный метод клика по элементу."""
@@ -65,7 +73,8 @@ class BasePage:
     def scroll_into_view(self, locator, timeout: int = 10):
         element = self._wait_for_visible(locator, timeout)
         self.driver.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});", element
+            "arguments[0].scrollIntoView({block: 'center'});",
+            element,
         )
 
     @allure.step("Нажать Enter в элементе {locator}")
