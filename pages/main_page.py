@@ -1,89 +1,64 @@
 import allure
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
-from locators.main_page_locators import MainPageLocators
 from pages.base_page import BasePage
-
-MAIN_PAGE_URL = "https://qa-scooter.praktikum-services.ru/"
+from locators.main_page_locators import MainPageLocators
 
 
 class MainPage(BasePage):
-    # URL в таком виде нужен для совместимости с существующим BasePage / тестами
-    URL = MAIN_PAGE_URL
+    # константа URL, которую ждёт тест test_scooter_logo_returns_to_main
+    URL = MainPageLocators.URL
 
-    def __init__(self, driver, url: str = MAIN_PAGE_URL):
-        super().__init__(driver, url)
-        self.URL = url
-
-    # ----------------------- Открытие главной -----------------------
-
-    @allure.step("Открыть главную страницу Самоката")
+    @allure.step("Открыть главную страницу")
     def open(self):
-        """Открыть главную страницу Самоката."""
         self.driver.get(self.URL)
 
-    # ----------------------- Кнопки «Заказать» -----------------------
+    # ---------------- ЛОГОТИПЫ ----------------
 
-    @allure.step("Нажать кнопку 'Заказать' вверху страницы")
-    def click_order_top(self):
-        self.click(MainPageLocators.ORDER_TOP_BUTTON)
-
-    @allure.step("Нажать кнопку 'Заказать' внизу страницы")
-    def click_order_bottom(self):
-        self.click(MainPageLocators.ORDER_BOTTOM_BUTTON)
-
-    # ----------------------- Логотипы -----------------------
-
-    @allure.step("Клик по логотипу 'Самокат'")
+    @allure.step("Клик по логотипу Самоката")
     def click_scooter_logo(self):
         self.click(MainPageLocators.SCOOTER_LOGO)
 
-    @allure.step("Клик по логотипу 'Яндекс'")
+    @allure.step("Клик по логотипу Яндекса")
     def click_yandex_logo(self):
         self.click(MainPageLocators.YANDEX_LOGO)
 
-    @allure.step("Переключиться на вкладку с индексом {index}")
-    def switch_to_window(self, index: int = -1):
+    # ---------------- КНОПКИ 'ЗАКАЗАТЬ' ----------------
+
+    @allure.step("Клик по верхней кнопке 'Заказать'")
+    def click_order_top(self):
+        self.click(MainPageLocators.ORDER_BUTTON_TOP)
+
+    @allure.step("Клик по нижней кнопке 'Заказать'")
+    def click_order_bottom(self):
+        # Для нижней кнопки часто нужен скролл
+        self.scroll_into_view(MainPageLocators.ORDER_BUTTON_BOTTOM)
+        self.click(MainPageLocators.ORDER_BUTTON_BOTTOM)
+
+    @allure.step("Клик по кнопке 'Заказать' из точки входа: {entry_point}")
+    def click_order(self, entry_point: str):
         """
-        Переключиться на вкладку по индексу.
-        Тесты вызывают page.switch_to_window(-1), поэтому принимаем индекс как аргумент.
+        entry_point ожидает значения:
+        - 'top'    — верхняя кнопка
+        - 'bottom' — нижняя кнопка
         """
-        self.driver.switch_to.window(self.driver.window_handles[index])
+        if entry_point == "top":
+            self.click_order_top()
+        elif entry_point == "bottom":
+            self.click_order_bottom()
+        else:
+            raise ValueError(f"Unknown entry point: {entry_point}")
 
-    # Для совместимости, если где-то ещё используется
-    def switch_to_new_tab(self):
-        self.switch_to_window(-1)
+    # ---------------- FAQ ----------------
 
-    # ----------------------- FAQ: вопросы/ответы -----------------------
-
-    @allure.step("Клик по вопросу №{index} в разделе FAQ")
+    @allure.step("Клик по вопросу FAQ №{index}")
     def click_question(self, index: int):
-        """
-        Кликает по вопросу FAQ.
-        Скроллим и кликаем через JS, чтобы не ловить ElementClickInterceptedException,
-        когда картинка самоката перекрывает элемент.
-        """
-        locator = MainPageLocators.question(index)
+        locator = MainPageLocators.QUESTION(index)
+        self.scroll_into_view(locator)
+        self.click(locator)
 
-        element = WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located(locator)
-        )
-
-        # Скролл к элементу
-        self.driver.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});",
-            element,
-        )
-
-        # Клик через JS, чтобы игнорировать перекрывающие элементы
-        self.driver.execute_script("arguments[0].click();", element)
-
-    @allure.step("Получить текст ответа для вопроса №{index}")
+    @allure.step("Получить текст ответа FAQ №{index}")
     def get_answer(self, index: int) -> str:
-        """Возвращает текст ответа для вопроса с заданным индексом."""
-        locator = MainPageLocators.answer(index)
-        element = WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located(locator)
-        )
+        locator = MainPageLocators.ANSWER(index)
+        # здесь можно было бы использовать хелпер из BasePage, но прямой поиск тоже ок
+        element = self.driver.find_element(*locator)
         return element.text

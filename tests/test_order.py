@@ -1,10 +1,11 @@
-# tests/test_order.py
 import pytest
+import allure
 
 from pages.main_page import MainPage
 from pages.order_page import OrderPage
 
 
+# Тестовые данные для оформления заказа
 ORDER_DATA = [
     (
         "top",
@@ -35,6 +36,7 @@ ORDER_DATA = [
 
 class TestOrder:
 
+    @allure.title("Успешное оформление заказа через верхнюю и нижнюю кнопки 'Заказать'")
     @pytest.mark.parametrize(
         "entry_point, first_name, last_name, address, metro, phone, date, rental_period, color, comment",
         ORDER_DATA,
@@ -56,18 +58,24 @@ class TestOrder:
         main_page = MainPage(driver)
         main_page.open()
 
-        if entry_point == "top":
-            main_page.click_order_top()
-        else:
-            main_page.click_order_bottom()
+        # Выбор точки входа в заказ — внутри PageObject, без if в тесте
+        main_page.click_order(entry_point)
 
-        order_page = OrderPage(driver, driver.current_url)
+        # Открылась форма заказа
+        order_page = OrderPage(driver, main_page.get_current_url())
 
+        # Шаг 1: данные клиента
         order_page.fill_customer_info(first_name, last_name, address, metro, phone)
+
+        # Переход на шаг аренды
         order_page.go_to_rent_step()
+
+        # Шаг 2: параметры аренды
         order_page.fill_rent_info(date, rental_period, color, comment)
+
+        # Отправляем заказ и подтверждаем
         order_page.submit_order()
 
+        # Проверяем, что появилось модальное окно с подтверждением
         success_text = order_page.get_success_modal_text()
-
         assert "Заказ оформлен" in success_text

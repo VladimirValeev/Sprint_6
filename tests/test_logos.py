@@ -1,32 +1,30 @@
-import pytest
+import allure
 from pages.main_page import MainPage
 
 
 class TestLogos:
+
+    @allure.title("Клик по логотипу Самоката ведёт на главную страницу")
     def test_scooter_logo_returns_to_main(self, driver):
         page = MainPage(driver)
-        # Открываем главную страницу
         page.open()
-        # Нажимаем кнопку "Заказать" вверху страницы, чтобы уйти со страницы
-        page.click_order_top()
-        # Жмём на логотип "Самокат"
-        page.click_scooter_logo()
-        # Проверяем, что вернулись на главную страницу Самоката
-        assert "qa-scooter.praktikum-services.ru" in driver.current_url
 
+        page.click_order_top()
+        page.click_scooter_logo()
+
+        assert "qa-scooter.praktikum-services.ru" in page.get_current_url()
+
+    @allure.title("Клик по логотипу Яндекса открывает новую вкладку")
     def test_yandex_logo_opens_dzen(self, driver):
         page = MainPage(driver)
         page.open()
 
-        # Запоминаем, сколько вкладок было до клика
-        initial_handles = driver.window_handles[:]
+        initial_handles = page.get_window_handles()
 
-        # Кликаем по логотипу Яндекса
         page.click_yandex_logo()
-
-        # Переключаемся на последнюю (новую) вкладку
         page.switch_to_window(-1)
 
-        # Проверяем, что вкладок стало больше, чем было — значит ДЗЕН (или что-то вместо него)
-        # открылся в новой вкладке, даже если URL = about:blank из-за ограничений среды
-        assert len(driver.window_handles) > len(initial_handles)
+        new_handles = page.get_window_handles()
+
+        # Проверяем факт открытия новой вкладки (в среде URL может быть about:blank)
+        assert len(new_handles) > len(initial_handles)
